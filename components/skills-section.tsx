@@ -1,47 +1,78 @@
-"use client"
+"use client";
 
-import { useRef, useState } from "react"
-import { motion, useScroll, useTransform } from "framer-motion"
-import { cn } from "@/lib/utils"
-import { useTheme } from "next-themes"
-import { Code, Palette, Layers, Cpu, ChevronRight } from "lucide-react"
-import dynamic from "next/dynamic"
-import { skillsData, skillsOverview, sectionTitle, sectionDescription, type Skill } from "@/lib/data/skills-data"
+import { useRef, useState, useEffect } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
+import { Code, Palette, Layers, Cpu, ChevronRight } from "lucide-react";
+import dynamic from "next/dynamic";
+import {
+  skillsData,
+  skillsOverview,
+  sectionTitle,
+  sectionDescription,
+  type Skill,
+} from "@/lib/data/skills-data";
 
-// 动态导入3D技能可视化组件
-const SkillsVisualization3D = dynamic(() => import("@/components/3d/skills-visualization"), {
-  ssr: false,
-  loading: () => <div className="w-full h-[400px] flex items-center justify-center">加载中...</div>,
-})
+// 立即加载一个简单版本，等待动态版本
+function LoadingFallback() {
+  return (
+    <div className="w-full h-[400px] md:h-[500px] flex items-center justify-center bg-muted/30 rounded-lg">
+      <div className="text-center">
+        <div className="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-muted-foreground">加载3D技能可视化...</p>
+      </div>
+    </div>
+  );
+}
+
+// 懒加载3D组件，完全客户端渲染
+const SkillsVisualization3D = dynamic(
+  () =>
+    import("./3d/skills-visualization").then((mod) => {
+      // 确保模块已加载，再返回组件
+      return Promise.resolve(mod.default);
+    }),
+  {
+    ssr: false,
+    loading: () => <LoadingFallback />,
+  }
+);
 
 // 图标映射
 const categoryIcons = {
   frontend: <Code className="w-6 h-6" />,
   creative: <Palette className="w-6 h-6" />,
   design: <Layers className="w-6 h-6" />,
-  other: <Cpu className="w-6 h-6" />
-}
+  other: <Cpu className="w-6 h-6" />,
+};
 
 export default function SkillsSection() {
-  const ref = useRef<HTMLDivElement>(null)
+  const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"],
-  })
-  const [activeCategory, setActiveCategory] = useState<string>("frontend")
-  const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null)
-  const { resolvedTheme } = useTheme()
-  const isDark = resolvedTheme === "dark"
+  });
+  const [activeCategory, setActiveCategory] = useState<string>("frontend");
+  const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+  const [isMounted, setIsMounted] = useState(false);
+
+  // 确保组件已挂载
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // 视差滚动效果
-  const y = useTransform(scrollYProgress, [0, 1], [0, -50])
-  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
+  const y = useTransform(scrollYProgress, [0, 1], [0, -50]);
+  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0]);
 
   const handleSkillClick = (skill: Skill) => {
-    setSelectedSkill(selectedSkill === skill ? null : skill)
-  }
+    setSelectedSkill(selectedSkill === skill ? null : skill);
+  };
 
-  const currentCategory = skillsData[activeCategory]
+  const currentCategory = skillsData[activeCategory];
 
   return (
     <section id="skills" ref={ref} className="py-24 relative">
@@ -84,7 +115,7 @@ export default function SkillsSection() {
           viewport={{ once: true }}
           className="mb-16"
         >
-          <SkillsVisualization3D />
+          {isMounted ? <SkillsVisualization3D /> : <LoadingFallback />}
         </motion.div>
 
         <div className="max-w-6xl mx-auto">
@@ -102,7 +133,7 @@ export default function SkillsSection() {
                 className={cn(
                   "cursor-pointer transition-all duration-300",
                   "transform hover:scale-105",
-                  activeCategory === key ? "z-10" : "",
+                  activeCategory === key ? "z-10" : ""
                 )}
               >
                 <div
@@ -112,10 +143,12 @@ export default function SkillsSection() {
                     "flex flex-col items-center justify-center text-center p-4",
                     activeCategory === key
                       ? "bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-lg shadow-primary/20"
-                      : "bg-muted/30 text-muted-foreground hover:bg-muted/50",
+                      : "bg-muted/30 text-muted-foreground hover:bg-muted/50"
                   )}
                 >
-                  <div className="mb-2">{categoryIcons[key as keyof typeof categoryIcons]}</div>
+                  <div className="mb-2">
+                    {categoryIcons[key as keyof typeof categoryIcons]}
+                  </div>
                   <h3 className="text-sm font-medium">{category.title}</h3>
                 </div>
               </motion.div>
@@ -136,16 +169,25 @@ export default function SkillsSection() {
                 "border border-transparent",
                 "bg-gradient-to-br from-background/80 to-background",
                 "shadow-lg shadow-primary/5",
-                isDark ? "backdrop-blur-sm" : "",
+                isDark ? "backdrop-blur-sm" : ""
               )}
             >
               <div className="flex items-center gap-4 mb-6">
-                <div className={cn("p-3 rounded-full", `bg-gradient-to-r ${currentCategory.color} text-white`)}>
+                <div
+                  className={cn(
+                    "p-3 rounded-full",
+                    `bg-gradient-to-r ${currentCategory.color} text-white`
+                  )}
+                >
                   {categoryIcons[activeCategory as keyof typeof categoryIcons]}
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold">{currentCategory.title}</h3>
-                  <p className="text-muted-foreground">{currentCategory.description}</p>
+                  <h3 className="text-2xl font-bold">
+                    {currentCategory.title}
+                  </h3>
+                  <p className="text-muted-foreground">
+                    {currentCategory.description}
+                  </p>
                 </div>
               </div>
 
@@ -160,7 +202,9 @@ export default function SkillsSection() {
                       "rounded-lg p-5 cursor-pointer transition-all duration-300",
                       "border border-transparent hover:border-primary/20",
                       "hover:shadow-md hover:shadow-primary/5",
-                      selectedSkill === skill ? "bg-primary/5 border-primary/20" : "bg-muted/20",
+                      selectedSkill === skill
+                        ? "bg-primary/5 border-primary/20"
+                        : "bg-muted/20"
                     )}
                     onClick={() => handleSkillClick(skill)}
                   >
@@ -172,8 +216,8 @@ export default function SkillsSection() {
                           skill.level === "专家"
                             ? "bg-primary/20 text-primary"
                             : skill.level === "精通"
-                              ? "bg-accent/20 text-accent"
-                              : "bg-muted/30 text-muted-foreground",
+                            ? "bg-accent/20 text-accent"
+                            : "bg-muted/30 text-muted-foreground"
                         )}
                       >
                         {skill.level}
@@ -185,7 +229,7 @@ export default function SkillsSection() {
                       <ChevronRight
                         className={cn(
                           "ml-auto w-4 h-4 transition-transform",
-                          selectedSkill === skill ? "rotate-90" : "",
+                          selectedSkill === skill ? "rotate-90" : ""
                         )}
                       />
                     </div>
@@ -203,7 +247,8 @@ export default function SkillsSection() {
                       <div className="pt-4 mt-4 border-t border-border">
                         <p className="text-sm mb-4">{skill.description}</p>
                         <div className="text-sm">
-                          <span className="font-medium">相关项目：</span> {skill.projects}
+                          <span className="font-medium">相关项目：</span>{" "}
+                          {skill.projects}
                         </div>
                       </div>
                     </motion.div>
@@ -229,14 +274,18 @@ export default function SkillsSection() {
                   "border border-transparent",
                   "bg-gradient-to-br from-background/80 to-background",
                   "shadow-lg shadow-primary/5",
-                  isDark ? "backdrop-blur-sm" : "",
+                  isDark ? "backdrop-blur-sm" : ""
                 )}
               >
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  <span className="text-xl font-bold text-primary">{item.value}</span>
+                  <span className="text-xl font-bold text-primary">
+                    {item.value}
+                  </span>
                 </div>
                 <h4 className="text-lg font-bold mb-2">{item.label}</h4>
-                <p className="text-sm text-muted-foreground">{item.description}</p>
+                <p className="text-sm text-muted-foreground">
+                  {item.description}
+                </p>
               </div>
             ))}
           </motion.div>
@@ -245,9 +294,16 @@ export default function SkillsSection() {
 
       <style jsx global>{`
         .hexagon {
-          clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+          clip-path: polygon(
+            50% 0%,
+            100% 25%,
+            100% 75%,
+            50% 100%,
+            0% 75%,
+            0% 25%
+          );
         }
       `}</style>
     </section>
-  )
+  );
 }

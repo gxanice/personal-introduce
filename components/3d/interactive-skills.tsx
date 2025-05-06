@@ -23,7 +23,7 @@ const skills = [
 ]
 
 // 创建粒子系统
-function createParticleSystem(count, radius) {
+function createParticleSystem(count: number, radius: number) {
   const positions = new Float32Array(count * 3)
   const colors = new Float32Array(count * 3)
   const sizes = new Float32Array(count)

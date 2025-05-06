@@ -195,7 +195,7 @@ export const skillsOverview = [
   {
     value: "3+",
     label: "实习项目",
-    description: "在网易有道、世纪好未来、亚信科技等知名企业积累了丰富的实习经验。"
+    description: "在网易有道、好未来、亚信科技等知名企业积累了丰富的实习经验。"
   },
   {
     value: "3+",
