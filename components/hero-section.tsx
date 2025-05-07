@@ -5,10 +5,14 @@ import { motion } from "framer-motion"
 import dynamic from "next/dynamic"
 import { useEffect, useState } from "react"
 
-// 动态导入3D组件以减少首屏加载时间
+// 使用noSSR封装，解决水合问题
 const Earth3D = dynamic(() => import("@/components/3d/earth-3d"), {
-  ssr: false,
-  loading: () => <div className="w-full h-[400px] flex items-center justify-center">加载中...</div>,
+  ssr: false, 
+  // loading: () => (
+  //   <div className="w-full h-[400px] flex items-center justify-center">
+  //     <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+  //   </div>
+  // )
 })
 
 const Title3D = dynamic(() => import("@/components/3d/title-3d"), {

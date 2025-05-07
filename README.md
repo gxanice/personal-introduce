@@ -12,6 +12,7 @@
 - Three.js + React Three Fiber
 - Framer Motion
 - shadcn/ui组件库
+- React-Globe.gl
 
 ## 开发流程简述
 
@@ -46,144 +47,151 @@ function useClientOnly() {
 
 - 在3D组件中使用动态导入并添加客户端检测：
 ```tsx
-const Scene = dynamic(() => import('@/components/3d/Scene'), { 
-  ssr: false,
-  loading: () => <ScenePlaceholder />
+const Globe = dynamic(() => import('react-globe.gl').then(mod => mod), {
+  ssr: false
 })
-```
 
-- 对于需要随机生成的3D元素，使用了确定性的种子生成算法，确保服务端和客户端生成相同的结果：
-```tsx
-// 使用固定种子的伪随机数生成
-const seededRandom = (seed) => {
-  const x = Math.sin(seed) * 10000
-  return x - Math.floor(x)
-}
-```
-
-### 2. 3D场景在移动设备上的性能问题
-
-**问题描述**：
-完整3D场景在低端移动设备上帧率明显下降，导致交互卡顿，特别是在3D地球模型旋转和缩放时尤为明显。设备发热严重且电池消耗快。
-
-**解决方案**：
-- 实现了设备性能自适应检测，为不同性能等级的设备提供不同复杂度的渲染：
-```tsx
-const detailLevel = useMemo(() => {
-  return isMobile
-    ? {
-        earthSegments: 32,
-        cloudSegments: 24,
-        atmosphereSegments: 16,
-        particleCount: 1000,
-      }
-    : {
-        earthSegments: 64,
-        cloudSegments: 32,
-        atmosphereSegments: 32,
-        particleCount: 3000,
-      }
-}, [isMobile])
-```
-
-- 优化了几何体和纹理加载：
-  - 使用LOD (Level of Detail)技术根据相机距离动态调整模型复杂度
-  - 实现纹理渐进式加载，先显示低分辨率纹理，再逐渐加载高清纹理
-  - 针对移动设备禁用了部分后期处理效果
-
-- 添加了性能监测与自动优化系统：
-```tsx
+// 组件内使用客户端检测
+const [isClient, setIsClient] = useState(false)
 useEffect(() => {
-  let frameCount = 0
-  let lastTime = performance.now()
-  let fpsCheckTimeout
-  
-  const checkPerformance = () => {
-    const now = performance.now()
-    const elapsed = now - lastTime
-    const fps = frameCount / (elapsed / 1000)
-    
-    // 如果FPS低于阈值，自动降低渲染质量
-    if (fps < 30 && !hasReducedQuality) {
-      setReducedQuality(true)
-    }
-    
-    frameCount = 0
-    lastTime = now
-    fpsCheckTimeout = setTimeout(checkPerformance, 2000)
-  }
-  
-  const frameListener = () => {
-    frameCount++
-  }
-  
-  // 启动性能监测
-  renderer.current?.setAnimationLoop(frameListener)
-  fpsCheckTimeout = setTimeout(checkPerformance, 2000)
-  
-  return () => {
-    clearTimeout(fpsCheckTimeout)
-    renderer.current?.setAnimationLoop(null)
-  }
+  setIsClient(true)
 }, [])
+
+// 避免SSR渲染问题
+if (!isClient) {
+  return <加载占位内容/>
+}
 ```
 
-### 3. 暗色/亮色主题切换导致的UI不一致
+### 2. 3D地球模型实现与性能优化
 
 **问题描述**：
-主题切换时产生了多种视觉问题，包括闪烁、组件状态不一致和动画中断。特别是3D场景和背景色之间的过渡不协调，用户体验较差。
+实现一个交互式3D地球模型，展示重要地理位置并支持层级导航，同时保持良好性能。
 
 **解决方案**：
-- 重构了主题切换逻辑，使用CSS变量和渐变动画实现平滑过渡：
-```css
-:root {
-  --transition-duration: 0.5s;
-}
-
-body {
-  transition: background-color var(--transition-duration) ease,
-              color var(--transition-duration) ease;
-}
-```
-
-- 为3D场景添加了主题感知能力，在主题切换时动态调整材质和光照：
+- 使用React-Globe.gl库创建高性能3D地球：
 ```tsx
-useEffect(() => {
-  if (earthRef.current) {
-    // 根据当前主题调整材质
-    const material = earthRef.current.material
-    
-    if (isDark) {
-      scene.background = new THREE.Color('#0f172a')
-      material.emissiveIntensity = 0.3
-      ambientLight.intensity = 0.3
-    } else {
-      scene.background = new THREE.Color('#f8fafc')
-      material.emissiveIntensity = 0.1
-      ambientLight.intensity = 0.7
+<Globe
+  ref={globeRef}
+  globeImageUrl={isDark 
+    ? '夜间地球纹理' 
+    : '日间地球纹理'}
+  bumpImageUrl='地形纹理'
+  backgroundImageUrl={isDark ? '星空背景' : null}
+  
+  // 多边形数据 - 根据当前视图级别显示不同地域数据
+  polygonsData={getPolygonsData()}
+  polygonCapColor={(d) => {
+    // 根据不同视图级别设置颜色
+    if (viewLevel === "global" && d.properties?.ADMIN === "China") {
+      return 'rgba(244, 63, 94, 0.8)'; // 全球视图中的中国
     }
-    
-    // 添加过渡动画
-    gsap.to(material, {
-      duration: 0.5,
-      emissiveIntensity: isDark ? 0.3 : 0.1,
-      ease: "power2.inOut"
-    })
-  }
-}, [isDark])
+    // 其他条件...
+    return 'rgba(200, 200, 200, 0.3)'; // 其他区域
+  }}
+/>
 ```
 
-- 使用Suspense和骨架屏优化主题切换过程中的加载体验：
+- 实现了多级地理区域导航系统：
 ```tsx
-<Suspense fallback={<ThemeSwitchSkeleton />}>
-  <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-    <ModeToggle />
-  </ThemeProvider>
-</Suspense>
+// 处理区域点击
+const handleLocationClick = (loc) => {
+  setSelectedRegion(location.id);
+  
+  if (location.type === "country") {
+    setViewLevel("country");
+  } else if (location.type === "region") {
+    setViewLevel("region");
+  } else if (location.type === "city") {
+    setViewLevel("city");
+  }
+  
+  // 设置摄像机位置到所选区域
+  globeRef.current.pointOfView({
+    lat: location.lat,
+    lng: location.lng,
+    altitude: zoomLevel
+  }, 1000);
+}
 ```
+
+- 针对初始化视角问题，实现了多重保障机制：
+```tsx
+// 设置初始视角，使中国可见
+useEffect(() => {
+  if (!globeRef.current || !loaded) return;
+  
+  // 用多个延迟尝试确保视角正确设置
+  const timer = setTimeout(() => {
+    globeRef.current.pointOfView({
+      lat: 35,
+      lng: 105,
+      altitude: 2.0
+    }, 0);
+  }, 500);
+  
+  return () => clearTimeout(timer);
+}, [loaded, globeRef.current]);
+
+// 增加备份机制
+useEffect(() => {
+  if (!isClient) return;
+  
+  const timers = [
+    setTimeout(() => {/* 设置视角 */}, 800),
+    setTimeout(() => {/* 再次设置视角 */}, 1500)
+  ];
+  
+  return () => timers.forEach(clearTimeout);
+}, [isClient]);
+```
+
+### 3. 暗色/亮色主题切换与3D场景适配
+
+**问题描述**：
+主题切换时需要同步调整3D地球的外观，包括地球纹理、背景和高亮颜色等，保持整体视觉一致性。
+
+**解决方案**：
+- 使用theme hook监听主题变化并应用不同资源：
+```tsx
+const { resolvedTheme } = useTheme()
+const isDark = resolvedTheme === "dark"
+
+// 在渲染时应用主题
+<Globe
+  globeImageUrl={isDark 
+    ? 'https://unpkg.com/three-globe/example/img/earth-night.jpg' 
+    : 'https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg'}
+  backgroundImageUrl={isDark ? 'https://unpkg.com/three-globe/example/img/night-sky.png' : null}
+  // 其他主题相关配置...
+/>
+```
+
+- 为UI元素添加主题感知样式：
+```tsx
+<Button 
+  onClick={resetView}
+  className={`px-4 py-2 backdrop-blur-sm border border-primary/20 rounded-full 
+    ${isDark 
+      ? 'bg-background/60 text-sky-300 hover:bg-sky-900/30' 
+      : 'bg-background/80 hover:bg-primary/10'
+    }`}
+>
+  重置视图
+</Button>
+```
+
+## 地球组件功能特点
+
+- **多级地理导航**：支持从全球→国家→省份→城市的层级导航
+- **自适应主题**：根据系统主题自动切换日/夜间地球样式
+- **交互式区域高亮**：点击区域自动高亮并缩放到合适视角
+- **地理数据集成**：使用GeoJSON数据展示国家、省份和城市边界
+- **移动设备优化**：针对不同屏幕尺寸优化显示效果和交互体验
+- **客户端渲染保障**：完全客户端渲染，避免SSR相关问题
 
 ## 项目成果与后续计划
 
-这个项目让我深入实践了现代前端技术，特别是3D可视化和性能优化方面的知识。后续计划添加更多交互式3D内容，并继续优化移动端体验。
+这个项目让我深入实践了现代前端技术，特别是3D可视化和性能优化方面的知识。后续计划添加更多交互式3D内容，增强地理数据的完整性，并继续优化移动端体验。
 
 项目已部署在Vercel平台上。 
