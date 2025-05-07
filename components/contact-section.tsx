@@ -7,7 +7,7 @@ import { motion, useScroll, useTransform } from "framer-motion"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
-import { Mail, Phone, MapPin, Github, Linkedin, Twitter, Send, CheckCircle, AlertCircle } from "lucide-react"
+import { Mail, Phone, MapPin, Github, Send, CheckCircle, AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useTheme } from "next-themes"
 import { contactData } from "@/lib/data/contact-data"
@@ -148,18 +148,12 @@ export default function ContactSection() {
                 <div className="mt-12">
                   <h4 className="text-lg font-medium mb-4">社交媒体</h4>
                   <div className="flex gap-4">
-                    {contactData.socialMedia.map((platform, index) => (
                       <a
-                        key={index}
-                        href={platform.url}
+                        href={'https://github.com/gxanice?tab=repositories'}
                         className="p-3 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-                        aria-label={platform.name}
                       >
-                        {platform.name === "Github" && <Github className="w-5 h-5" />}
-                        {platform.name === "LinkedIn" && <Linkedin className="w-5 h-5" />}
-                        {platform.name === "Twitter" && <Twitter className="w-5 h-5" />}
+                        <Github className="w-5 h-5" />
                       </a>
-                    ))}
                   </div>
                 </div>
               </div>

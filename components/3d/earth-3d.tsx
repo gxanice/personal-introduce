@@ -8,7 +8,7 @@ import * as THREE from "three"
 import { EffectComposer, Bloom, ChromaticAberration } from "@react-three/postprocessing"
 import { useTheme } from "next-themes"
 
-// 简化的GeoJSON数据 - 实际应用中应该使用完整的GeoJSON数据
+// 简化的GeoJSON数据
 const geoData = {
   countries: [
     {
@@ -16,143 +16,28 @@ const geoData = {
       name: "中国",
       center: { lat: 35.8617, lon: 104.1954 },
       color: "#f43f5e",
-      // 简化的中国边界坐标点
+      // 中国大致边界（示意，实际可用更详细GeoJSON）
       boundary: [
-        [117.2, 49.5],
-        [119.5, 46.2],
-        [126.0, 41.8],
-        [131.3, 42.9],
-        [134.5, 39.8],
-        [121.2, 25.0],
-        [110.3, 18.0],
-        [97.5, 28.0],
-        [88.8, 36.0],
-        [80.2, 42.0],
-        [87.5, 49.2],
-        [117.2, 49.5],
+        [73.5, 53.5], [135.0, 53.5], [135.0, 18.0], [73.5, 18.0], [73.5, 53.5]
       ],
       regions: [
         {
-          id: "beijing",
-          name: "北京",
-          center: { lat: 39.9042, lon: 116.4074 },
-          color: "#f43f5e",
-          // 简化的北京边界坐标点
+          id: "henan",
+          name: "河南省",
+          center: { lat: 33.8820, lon: 113.6140 },
+          color: "#f59e42",
           boundary: [
-            [115.7, 40.5],
-            [117.4, 40.5],
-            [117.4, 39.4],
-            [115.7, 39.4],
-            [115.7, 40.5],
+            [110.5, 36.5], [116.5, 36.5], [116.5, 31.0], [110.5, 31.0], [110.5, 36.5]
           ],
           cities: [
             {
-              id: "beijing-city",
-              name: "北京市",
-              center: { lat: 39.9042, lon: 116.4074 },
-              description: "中国首都，政治文化中心",
-              // 简化的北京市中心区域坐标点
+              id: "zhengzhou",
+              name: "郑州市",
+              center: { lat: 34.7466, lon: 113.6254 },
+              description: "河南省省会，中原城市群核心城市",
+              // 郑州市大致边界（示意）
               boundary: [
-                [116.2, 40.0],
-                [116.6, 40.0],
-                [116.6, 39.8],
-                [116.2, 39.8],
-                [116.2, 40.0],
-              ],
-            },
-          ],
-        },
-        {
-          id: "shanghai",
-          name: "上海",
-          center: { lat: 31.2304, lon: 121.4737 },
-          color: "#f43f5e",
-          // 简化的上海边界坐标点
-          boundary: [
-            [120.9, 31.9],
-            [122.1, 31.9],
-            [122.1, 30.7],
-            [120.9, 30.7],
-            [120.9, 31.9],
-          ],
-          cities: [
-            {
-              id: "shanghai-city",
-              name: "上海市",
-              center: { lat: 31.2304, lon: 121.4737 },
-              description: "中国经济金融中心",
-              // 简化的上海市中心区域坐标点
-              boundary: [
-                [121.2, 31.4],
-                [121.6, 31.4],
-                [121.6, 31.0],
-                [121.2, 31.0],
-                [121.2, 31.4],
-              ],
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: "usa",
-      name: "美国",
-      center: { lat: 37.0902, lon: -95.7129 },
-      color: "#8b5cf6",
-      // 简化的美国边界坐标点
-      boundary: [
-        [-125.0, 48.0],
-        [-125.0, 32.5],
-        [-100.0, 32.5],
-        [-100.0, 48.0],
-        [-125.0, 48.0],
-        [-97.0, 49.0],
-        [-97.0, 25.0],
-        [-80.5, 25.0],
-        [-80.5, 49.0],
-        [-97.0, 49.0],
-      ],
-      regions: [
-        {
-          id: "california",
-          name: "加利福尼亚",
-          center: { lat: 36.7783, lon: -119.4179 },
-          color: "#8b5cf6",
-          // 简化的加州边界坐标点
-          boundary: [
-            [-124.4, 42.0],
-            [-124.4, 32.5],
-            [-114.1, 32.5],
-            [-114.1, 42.0],
-            [-124.4, 42.0],
-          ],
-          cities: [
-            {
-              id: "san-francisco",
-              name: "旧金山",
-              center: { lat: 37.7749, lon: -122.4194 },
-              description: "美国科技创新中心",
-              // 简化的旧金山边界坐标点
-              boundary: [
-                [-122.5, 37.8],
-                [-122.3, 37.8],
-                [-122.3, 37.7],
-                [-122.5, 37.7],
-                [-122.5, 37.8],
-              ],
-            },
-            {
-              id: "los-angeles",
-              name: "洛杉矶",
-              center: { lat: 34.0522, lon: -118.2437 },
-              description: "美国娱乐产业中心",
-              // 简化的洛杉矶边界坐标点
-              boundary: [
-                [-118.5, 34.2],
-                [-118.0, 34.2],
-                [-118.0, 33.8],
-                [-118.5, 33.8],
-                [-118.5, 34.2],
+                [113.3, 34.9], [114.0, 34.9], [114.0, 34.5], [113.3, 34.5], [113.3, 34.9]
               ],
             },
           ],
@@ -557,8 +442,7 @@ function Earth() {
   // 动画
   useFrame((state) => {
     if (earthRef.current) {
-      // 如果启用自动旋转，地球会缓慢自转
-      if (autoRotate && !activeLocation) {
+      if (autoRotate) {
         earthRef.current.rotation.y += 0.001
       }
 
@@ -612,8 +496,7 @@ function Earth() {
   // 处理位置点击
   const handleLocationClick = (location) => {
     setActiveLocation(location)
-    setAutoRotate(false) // 停止自动旋转
-
+    
     // 根据当前导航级别决定行为
     if (navigationLevel === "country") {
       setSelectedCountry(location.id)
@@ -640,7 +523,7 @@ function Earth() {
 
     // 相机动画移动到选中位置
     const targetPosition = new THREE.Vector3(...latLongToVector3(location.center.lat, location.center.lon, 5.2))
-    animateCameraToPosition(camera, targetPosition, navigationLevel === "city" ? 8 : 12)
+    animateCameraToPosition(camera, targetPosition, navigationLevel === "city" ? 12 : 12)
   }
 
   // 返回上一级
@@ -671,8 +554,10 @@ function Earth() {
   }
 
   // 相机动画
-  const animateCameraToPosition = (camera, targetPosition, distance) => {
-    const normalizedPosition = targetPosition.clone().normalize().multiplyScalar(distance)
+  const animateCameraToPosition = (camera: THREE.PerspectiveCamera, targetPosition: THREE.Vector3, distance: number) => {
+    // city 级别距离设为 11，其他为传入的 distance
+    const finalDistance = navigationLevel === "city" ? 11 : distance
+    const normalizedPosition = targetPosition.clone().normalize().multiplyScalar(finalDistance)
     const currentPos = camera.position.clone()
     const duration = 1.5 // 动画持续时间（秒）
     const startTime = Date.now()
@@ -778,16 +663,16 @@ function Earth() {
                 <Html
                   position={[0, 1.2, 0]}
                   center
-                  distanceFactor={isMobile ? 10 : 8}
+                  distanceFactor={isMobile ? 15 : 12}
                   className="pointer-events-none"
                   occlude={[earthRef]}
                 >
-                  <div className="glass-effect p-4 rounded-lg w-64 shadow-lg">
-                    <h3 className="font-bold text-gradient mb-1">{location.name}</h3>
+                  <div className="glass-effect p-3 rounded-lg w-48 shadow-lg">
+                    <h3 className="font-bold text-gradient text-sm mb-1">{location.name}</h3>
                     {navigationLevel === "city" && location.description && (
-                      <p className="text-xs text-muted-foreground mt-2">{location.description}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{location.description}</p>
                     )}
-                    <div className="mt-3 h-1 bg-gradient-to-r from-primary to-accent rounded-full"></div>
+                    <div className="mt-2 h-0.5 bg-gradient-to-r from-primary to-accent rounded-full"></div>
                   </div>
                 </Html>
               </>
@@ -798,27 +683,13 @@ function Earth() {
 
       {/* 导航控制 */}
       <Html position={[0, 0, 0]} center fullscreen>
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
-          {navigationLevel !== "country" && (
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/3 flex flex-wrap gap-2 justify-center items-center w-full px-2">
             <button
-              onClick={handleBack}
-              className="px-4 py-2 bg-background/80 backdrop-blur-sm border border-primary/20 rounded-full text-sm font-medium hover:bg-primary/10 transition-colors"
+              onClick={resetCamera}
+              className="px-4 py-2 bg-background/80 backdrop-blur-sm border border-primary/20 rounded-full text-sm font-medium hover:bg-primary/10 transition-colors whitespace-nowrap"
             >
-              返回{navigationLevel === "region" ? "国家" : "地区"}视图
+              重置视图
             </button>
-          )}
-          <button
-            onClick={resetCamera}
-            className="px-4 py-2 bg-background/80 backdrop-blur-sm border border-primary/20 rounded-full text-sm font-medium hover:bg-primary/10 transition-colors"
-          >
-            重置视图
-          </button>
-          <button
-            onClick={toggleAutoRotate}
-            className="px-4 py-2 bg-background/80 backdrop-blur-sm border border-primary/20 rounded-full text-sm font-medium hover:bg-primary/10 transition-colors"
-          >
-            {autoRotate ? "停止旋转" : "开始旋转"}
-          </button>
         </div>
       </Html>
 

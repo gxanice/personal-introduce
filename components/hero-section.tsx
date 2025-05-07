@@ -90,7 +90,7 @@ export default function HeroSection() {
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1, delay: 0.5 }}
-        className="w-full max-w-3xl h-[400px] md:h-[500px] animate-float"
+        className="w-full max-w-4xl h-[400px] md:h-[600px] animate-float"
       >
         {isMounted && <Earth3D />}
       </motion.div>
