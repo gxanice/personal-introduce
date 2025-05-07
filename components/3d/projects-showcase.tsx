@@ -31,7 +31,7 @@ const projects = [
   },
 ]
 
-function ProjectCard({ project, index, activeIndex, setActiveIndex }) {
+function ProjectCard({ project, index, activeIndex, setActiveIndex }: { project: any, index: number, activeIndex: number | null, setActiveIndex: (index: number | null) => void }) {
   const { title, description, image, position, rotation } = project
   const meshRef = useRef<THREE.Mesh>(null)
   const { resolvedTheme } = useTheme()
@@ -72,7 +72,7 @@ function ProjectCard({ project, index, activeIndex, setActiveIndex }) {
       >
         <planeGeometry args={[2, 1.2]} />
         <meshStandardMaterial
-          map={texture}
+          map={texture as THREE.Texture}
           emissive={isDarkTheme ? "#14b8a6" : "#0891b2"}
           emissiveIntensity={isActive ? 0.2 : 0}
           metalness={0.5}
@@ -139,7 +139,7 @@ function Scene() {
       <Billboard follow={true} position={[0, 1.5, 0]}>
         <Text
           fontSize={0.5}
-          font="/fonts/Inter-Bold.ttf"
+          font="/fonts/"
           color={isDarkTheme ? "#14b8a6" : "#0891b2"}
           anchorX="center"
           anchorY="middle"

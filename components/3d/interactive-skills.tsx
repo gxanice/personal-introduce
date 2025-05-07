@@ -60,14 +60,14 @@ function createParticleSystem(count: number, radius: number) {
 // 重置相机控制器
 function ResetCameraButton() {
   const { camera } = useThree()
-  const controlsRef = useRef()
+  const controlsRef = useRef(null)
   const [isHovered, setIsHovered] = useState(false)
 
   const resetCamera = useCallback(() => {
     camera.position.set(0, 0, 15)
     camera.lookAt(0, 0, 0)
     if (controlsRef.current) {
-      controlsRef.current.reset()
+      (controlsRef.current as any).reset?.()
     }
   }, [camera])
 
@@ -92,9 +92,23 @@ function ResetCameraButton() {
   )
 }
 
+// 技能行星组件接口定义
+interface SkillPlanetProps {
+  skill: {
+    name: string
+    level: number
+    color: string
+    icon: string
+  }
+  index: number
+  isActive: boolean
+  onClick: () => void
+  isDark: boolean
+}
+
 // 技能行星组件
-function SkillPlanet({ skill, index, isActive, onClick, isDark }) {
-  const meshRef = useRef()
+function SkillPlanet({ skill, index, isActive, onClick, isDark }: SkillPlanetProps) {
+  const meshRef = useRef<THREE.Mesh>(null)
   const [isHovered, setIsHovered] = useState(false)
   const [rotation, setRotation] = useState(
     () => new THREE.Euler(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI),
@@ -168,7 +182,6 @@ function SkillPlanet({ skill, index, isActive, onClick, isDark }) {
           color={isActive || isHovered ? "#ffffff" : skill.color}
           anchorX="center"
           anchorY="middle"
-          font="/fonts/Inter-Bold.ttf"
         >
           {skill.name}
         </Text>
@@ -256,7 +269,7 @@ function PlanetarySkillsSystem() {
 
   // 处理技能点击
   const handleSkillClick = useCallback(
-    (index) => {
+    (index: number) => {
       // 切换激活状态
       setActiveSkill(activeSkill === index ? null : index)
 
@@ -446,21 +459,18 @@ function PlanetarySkillsSystem() {
         <bufferGeometry>
           <bufferAttribute
             attach="attributes-position"
+            args={[particles.positions, 3]}
             count={particles.positions.length / 3}
-            array={particles.positions}
-            itemSize={3}
           />
           <bufferAttribute
             attach="attributes-color"
+            args={[particles.colors, 3]}
             count={particles.colors.length / 3}
-            array={particles.colors}
-            itemSize={3}
           />
           <bufferAttribute
             attach="attributes-size"
+            args={[particles.sizes, 1]}
             count={particles.sizes.length}
-            array={particles.sizes}
-            itemSize={1}
           />
         </bufferGeometry>
         <pointsMaterial

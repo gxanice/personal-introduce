@@ -51,7 +51,6 @@ function Title() {
           <Text
             ref={textRef}
             fontSize={isMobile ? 0.8 : 1.2}
-            font="/fonts/Inter-Bold.ttf"
             letterSpacing={0.05}
             lineHeight={1.2}
             material-toneMapped={false}
